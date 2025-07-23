@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react';
+import { BiHeart, BiSolidHeart, BiShare } from "react-icons/bi";
 import './App.css';
 
 function App() {
-
 
   return (
     <div className="app">
@@ -11,7 +12,7 @@ function App() {
         <div className="grid">
 
           <div className="header-0">
-            //  mini aturi ty\\
+            //  mini aturi ty //
           </div>
 
           <div className="left-1">
@@ -53,8 +54,17 @@ function App() {
 }
 
 interface Status {
-  content: String,
-  date: String,
+  content: string,
+  date: string,
+}
+
+async function copyTextToClipboard(text: string): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(text);
+    window.alert("Status copied to clipboard!")
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+  }
 }
 
 const StatusBox: React.FC = () => {
@@ -62,8 +72,8 @@ const StatusBox: React.FC = () => {
 
   return (
     <div className="status-box">
-      {statuses.map(s => (
-        <StatusItem status={s} />
+      {statuses.map((s, index) => (
+        <StatusItem status={s} key={(index * Math.random()).toString()} />
       ))}
     </div>
   );
@@ -74,21 +84,103 @@ interface StatusProps {
 };
 
 const StatusItem: React.FC<StatusProps> = ({ status }) => {
+  const [relativeDate, setRelativeDate] = useState<string>(status.date);
+  const [isFavorited, setIsFavorited] = useState<boolean>(false);
+  const [isHoveringDate, setIsHoveringDate] = useState<boolean>(false);
+
+  useEffect(() => {
+    const now: Date = new Date();
+    const parsedDate: String[] = status.date.split('/');
+
+    console.log(parsedDate);
+    console.log((now.getDate()).toString() + "/" + (now.getMonth() + 1).toString() + "/" + (now.getFullYear()));
+
+    if (Number(parsedDate[0]) !== now.getMonth() + 1 || Number(parsedDate[2]) !== now.getFullYear()) return;
+    
+    // There MIGHT be a better way to do this.
+    switch (now.getDate() - Number(parsedDate[1])) {
+      case 0:
+        setRelativeDate("today");
+        break;
+      case 1:
+        setRelativeDate("yesterday");
+        break;
+      case 2:
+        setRelativeDate("a couple days ago");
+        break;
+      case 3:
+        setRelativeDate("a couple days ago");
+        break;
+      case 4:
+        setRelativeDate("a couple days ago");
+        break;
+      case 5:
+        setRelativeDate("a couple days ago");
+        break;
+      case 6:
+        setRelativeDate("a couple days ago");
+        break;
+      case 7:
+        setRelativeDate("a week ago");
+        break;
+      default:
+        setRelativeDate("over a week ago");
+        break;
+    }
+
+  }, [status.date]);
+
+  const handleMouseEnter = () => {
+    setIsHoveringDate(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHoveringDate(false);
+  };
+
   return (
-    <div className="status-container">
+    <div className="status-container" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="s-title">
         <div className="s-author">
-          {`mini (@miniaturity)`}
+          <div className="s-author-pfp">
+            <img className="pfp" src="assets/images/mini.png" alt="mini"/>
+          </div>
+          <div className="s-author-username">
+            <div className="s-author-display">
+              {`mini`}
+            </div>
+            <div className="s-author-handle">
+              {`@miniaturity`}
+            </div>
+          </div>
         </div>
         <div className="s-date">
-          {`(${status.date})`}
+          {isHoveringDate ? `(${status.date})` : `(${relativeDate})`}
         </div>
       </div>
       <div className="s-content">
+        <div className="s-content-box">
         {status.content}
+        </div>
       </div>
       <div className="s-buttons">
-        
+        <div className="s-button-set1">
+          <button className="favorite" onClick={() => {
+            setIsFavorited(prev => !prev);
+          }} style={{
+            color: isFavorited ? '#eb4034' : 'var(--default-color)'
+          }}>
+            {isFavorited ? <BiSolidHeart size={12}/> : <BiHeart size={12}/>}
+          </button>
+          <button className="favorite" onClick={() => {
+            copyTextToClipboard(`@miniaturity (${status.date}) - \"` + status.content + "\"");
+          }}>
+            <BiShare size={12}/>
+          </button>
+        </div>
+        <div className="s-buttons-replies">
+          0 replies
+        </div>
       </div>
     </div>
   );

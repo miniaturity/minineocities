@@ -4,9 +4,11 @@
 :root {
   --font-family: 'JetBrains Mono', monospace;
   --bg: #1E1E2E;
+  --d-bg: #171724;
   --main-col: #A6E3A1;
   --header-font: 'asciid';
-  --border-color: #A6ADC8;
+  --default-color: #A6ADC8;
+  --d-d-color: #72778a;
 }
 
 .app {
@@ -37,7 +39,7 @@
   grid-row-gap: 12px;
   width: 100%;
   height: 100%;
-  color: var(--border-color);
+  color: var(--default-color);
 }
 
 .header-0 {
@@ -58,7 +60,7 @@
   margin: -10px 4px;
   padding: 0 3px;
   background-color: var(--bg);
-  color: var(--border-color);
+  color: var(--default-color);
   z-index: 9;
   top: 0;
   left: 0;
@@ -72,7 +74,7 @@
   margin: -10px 4px ;
   padding: 0 3px ;
   background-color: var(--bg) ;
-  color: var(--border-color) ;
+  color: var(--default-color) ;
   z-index: 9;
   transition: 0.15s all ease-in-out;
 }
@@ -95,16 +97,27 @@
 /* All Sections*/
 .left-1, .left-2, .middle-1, .right-1, .right-2, .header-0 {
   transition: 0.15s all ease-in-out;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--default-color);
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+  overflow: -moz-scrollbars-none;
 }
+
+.header-0::-webkit-scrollbar, .left-1::-webkit-scrollbar, .left-2::-webkit-scrollbar, .middle-1::-webkit-scrollbar, .right-1::-webkit-scrollbar, .right-2::-webkit-scrollbar {
+  display: none;
+}
+
 
 .l1-contents, .l2-contents, .m1-contents, .r1-contents, .r2-contents {
   margin: 12px;
+  width: 100%;
+  height: 100%;
 }
 
 .left-1 {
   display: flex;
   grid-area: 2 / 1 / 4 / 2;
+  overflow: hidden;
 }
 
 .left-2 {
@@ -126,6 +139,131 @@
   display: flex;
   grid-area: 3 / 3 / 5 / 4;
 }
+
+/* Statusbox */
+
+.status-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  max-width: 100%;
+  max-height: 93%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.status-box::-webkit-scrollbar {
+  display: none;
+}
+
+.status-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--d-bg);
+  width: 100%;
+}
+
+.s-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 8px;
+  width: 100%;
+}
+
+/* StatusBox - Author */
+
+.s-author {
+  display: flex;
+  flex-direction: row;
+  margin-left: 8px;
+  gap: 8px;
+}
+
+.s-author-pfp {
+  height: 48px;
+  width: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--bg);
+}
+
+.pfp {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.s-author-username {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.s-author-display {
+  font-size: 1rem;
+}
+
+.s-author-handle {
+  font-size: 0.7rem;
+  color: var(--d-d-color);
+}
+
+.s-date {
+  margin-right: 8px;
+  font-size: 0.7rem;
+  color: var(--d-d-color);
+}
+
+/* StatusBox - Content */
+
+.s-content {
+  display: flex;
+  width: 100%;
+  margin-left: 8px;
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+}
+
+.s-content-box {
+  margin: 8px;
+}
+
+.s-buttons {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.favorite {
+  color: var(--default-color);
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.s-button-set1 {
+  display: flex;
+  width: 50%;
+  flex-direction: row;
+  gap: 8px;
+  margin: 8px;
+}
+
+.s-buttons-replies {
+  margin: 8px;
+  color: var(--d-d-color);
+  font-size: 0.7rem;
+}
+
+
+
+
+
 
 
 

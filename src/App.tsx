@@ -3,6 +3,12 @@ import { BiHeart, BiSolidHeart, BiShare, BiSkipPrevious, BiPlay, BiSkipNext, BiP
 import './App.css';
 
 function App() {
+  const msgStyle = 'color: #A6E3A1; font-size: 1rem'
+
+  useEffect(() => {
+    console.log("%cwhat're u looking at??", msgStyle);
+    console.log("%chello though", msgStyle);
+  }, [])
 
   return (
     <div className="app">
@@ -12,7 +18,8 @@ function App() {
         <div className="grid">
 
           <div className="header-0">
-            {`> miniaturity`}
+            <span className="header-big">{`> miniaturity`}</span>
+            <span className="header-small">{`mini`}</span>
           </div>
 
           <div className="left-1">
@@ -29,20 +36,32 @@ function App() {
 
           <div className="middle-1">
             <div className="m1-contents"> {/* Main */}
-              {`Welcome to my ebbsite, I am miniaturity. I am a front-end developer that loves to create stylized apps and websites!`}
+              <span className="header-small" style={{color: "red"}}>{`HEY THERE! I'm way too lazy to design the CSS to make this layout phone friendly, view the full website on desktop!`} <br /> <br /> </span>
 
+              {`Welcome to my ebbsite, I am miniaturity. I am a front-end developer that loves to create stylized apps and websites!`}
+              <br /> <br />
+              {`Contact me: @miniaturity on everything`}
+              <br /> <br />
+              {`This website's theme is inspired by the spotify-tui theme from spicetify. (CSS was replicated, not taken directly.)`}
+              {` Thank you to the creator for the inspiration!`}
+              <br /> <br />
+              {`The songs section contains songs that I've been recently listening to. I'll update it sometimes. There are currently [${require('./songs.json').length}] songs available.`}
+              <br /> <br />
+              {`Check out my github for my projects!`} <br /> <br /> <a href="https://github.com/miniaturity" target="_blank" rel="noreferrer">https://github.com/miniaturity</a>
+              <br /> <br />
+              {`More about me.. I work with TypeScript, React, and CSS, which is what I used to create this website! I also sometimes work with Unity, Godot and Electron to build apps and games.`}
             </div>
           </div>
 
           <div className="right-1">
-            <div className="r1-contents"> {/* Contact */}
-              
+            <div className="r1-contents"> {/* Toybox */}
+              <ToyBox />
             </div>
           </div>
 
           <div className="right-2">
-            <div className="r2-contents"> {/* Projects */}
-              
+            <div className="r2-contents"> {/* CBox */}
+              <iframe src="https://www3.cbox.ws/box/?boxid=3548045&boxtag=tAf8KK" className="cbox" title="cbox"></iframe>	
             </div>
           </div>
 
@@ -70,6 +89,15 @@ async function copyTextToClipboard(text: string): Promise<void> {
     console.error('Failed to copy text: ', err);
   }
 }
+
+const ToyBox: React.FC = () => {
+  return (
+    <div className="toybox">
+      <span className="toybox-msg">Coming soon.</span>
+    </div>
+  )
+}
+
 
 interface Song {
   path: string,
@@ -290,9 +318,6 @@ const StatusItem: React.FC<StatusProps> = ({ status }) => {
   useEffect(() => {
     const now: Date = new Date();
     const postedDate: String[] = status.date.split('/');
-
-    console.log(postedDate);
-    console.log((now.getDate()).toString() + "/" + (now.getMonth() + 1).toString() + "/" + (now.getFullYear()));
 
     if (Number(postedDate[0]) !== now.getMonth() + 1 || Number(postedDate[2]) !== now.getFullYear()) return;
     

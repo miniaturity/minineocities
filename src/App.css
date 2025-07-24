@@ -11,6 +11,10 @@
   --d-d-color: #72778a;
 }
 
+a {
+  color: var(--main-col);
+}
+
 .app {
   display: flex;
   background-color: var(--bg);
@@ -41,6 +45,11 @@
   height: 100%;
   color: var(--default-color);
 }
+
+.header-small {
+  display: none;
+}
+
 
 .header-0 {
   display: flex;
@@ -93,8 +102,8 @@
 .left-1::before { content: "status" }
 .left-2::before { content: "songs" }
 .middle-1::before { content: "about" }
-.right-1::before { content: "contact" }
-.right-2::before { content: "projects" }
+.right-1::before { content: "toybox" }
+.right-2::before { content: "msg" }
 
 /* All Sections*/
 .left-1, .left-2, .middle-1, .right-1, .right-2, .header-0 {
@@ -114,6 +123,13 @@
   margin: 12px;
   width: 100%;
   height: 100%;
+}
+
+.r2-contents {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 94%;
 }
 
 .left-1 {
@@ -463,6 +479,75 @@
   height: 100%;
 }
 
+.cbox {
+  border: none;
+  width: 100%;
+  height: 100%;
+}
 
+.toybox {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease-in-out;
+  height: 90%;
+  width: 100%;
+}
+
+.toybox-msg {
+  margin: 8px;
+}
+
+.toybox-msg:hover {
+  background-color: #6d6d6d79;
+  cursor: crosshair;
+}
+
+.toybox:hover {
+  color: var(--main-col);
+}
+
+@media screen and (max-width: 920px) {
+
+  .header-big {
+    display: none;
+  }
+
+  .header-small {
+    display: contents;
+  }
+
+  .grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .header-0 {
+    width: 90%;
+    height: 20%;
+  }
+
+  .middle-1 {
+    width: 90%;
+    height: 80%;
+  }
+
+  .left-1 {
+    display: none;
+  }
+
+  .left-2 {
+    display: none;
+  }
+
+  .right-1 {
+    display: none;
+  }
+
+  .right-2 {
+    display: none;
+  }
+}
 
 

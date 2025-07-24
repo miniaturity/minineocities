@@ -53,6 +53,8 @@
   font-size: 6rem;
 }
 
+
+
 .header-0::before {
   font-size: 1rem;
   position: absolute;
@@ -89,7 +91,7 @@
 
 .header-0::before { content: "header" }
 .left-1::before { content: "status" }
-.left-2::before { content: "me" }
+.left-2::before { content: "songs" }
 .middle-1::before { content: "about" }
 .right-1::before { content: "contact" }
 .right-2::before { content: "projects" }
@@ -128,6 +130,7 @@
 .middle-1 {
   display: flex;
   grid-area: 2 / 2 / 5 / 3;
+  overflow-y: scroll;
 }
 
 .right-1 {
@@ -260,9 +263,205 @@
   font-size: 0.7rem;
 }
 
+/* MP3 Player */
 
+.player {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
 
+.player-info {
+  display: flex;
+  flex-direction: row;
+  height: 50%;
+}
 
+.pi-img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 33%;
+}
+
+.pi-aa {
+  object-fit: cover;
+  width: 78px;
+  height: 78px;
+  border-radius: 4px;
+}
+
+.pi-song {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+  width: 50%;
+}
+
+.pi-title {
+  font-size: 1rem;
+}
+
+.pi-artist {
+  font-size: 0.7rem;
+  color: var(--d-d-color);
+}
+
+/* Controls */
+
+.player-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 40%;
+}
+.pc-time {
+  display: flex;
+  justify-content: center;
+  height: 30%;
+}
+
+.pct-current {
+  color: var(--d-d-color);
+  font-size: 0.8rem;
+}
+
+.pc-bar-container {
+  display: flex;
+  width: 80%;
+  height: 15%;
+}
+
+.pc-bar {
+  width: 100%;
+}
+
+/* Custom Input Bar */
+
+.pc-bar-container input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+
+.pc-bar-container input[type="range"]:focus {
+  outline: none;
+}
+
+.pc-bar-container input[type="range"]::-webkit-slider-runnable-track {
+  background-color: var(--d-bg);
+  border-radius: 0rem;
+  height: 8px;
+}
+
+.pc-bar-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  margin-top: 0px; /* Centers thumb on the track */
+  background-color: var(--main-col);
+  border-radius: 0rem;
+  height: 8px;
+  width: 8px;
+}
+
+.pc-bar-container input[type="range"]:focus::-webkit-slider-thumb {
+  outline: 1px solid var(--main-col);
+  outline-offset: 0.125rem;
+}
+
+.pccv-bar-container input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 65%;
+}
+
+.pccv-bar-container input[type="range"]:focus {
+  outline: none;
+}
+
+.pccv-bar-container input[type="range"]::-webkit-slider-runnable-track {
+  background-color: var(--d-bg);
+  border-radius: 0rem;
+  height: 8px;
+}
+
+.pccv-bar-container input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  margin-top: 0px; /* Centers thumb on the track */
+  background-color: var(--main-col);
+  border-radius: 0rem;
+  height: 8px;
+  width: 8px;
+}
+
+.pccv-bar-container input[type="range"]:focus::-webkit-slider-thumb {
+  outline: 1px solid var(--main-col);
+  outline-offset: 0.125rem;
+}
+
+/* Control buttons */
+
+.pc-controller {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  height: 55%;
+}
+
+.pcc-song {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 50%;
+  align-items: center;
+  justify-content: center;
+}
+
+.pccs-prev, .pccs-play, .pccs-next {
+  background: transparent;
+  border: none;
+  color: var(--default-color);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.pccs-prev:hover, .pccs-play:hover, .pccs-next:hover {
+  color: var(--main-col);
+}
+
+.pcc-volume {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 50%;
+  align-items: center;
+  justify-content: flex;
+}
+
+.pccv-mute {
+  background: transparent;
+  border: none;
+  color: var(--default-color);
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+  height: 100%;
+  width: 20%;
+}
+
+.pccv-bar-container {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
 
 
 

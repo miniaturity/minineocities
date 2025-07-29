@@ -1,14 +1,89 @@
 import { useEffect, useRef, useState } from 'react';
 import { BiHeart, BiSolidHeart, BiShare, BiSkipPrevious, BiPlay, BiSkipNext, BiPause, BiVolumeMute, BiVolumeFull } from "react-icons/bi";
+import { HiMiniArrowDownRight } from "react-icons/hi2";
 import './App.css';
+import { animated, easings, useSpring } from '@react-spring/web';
+
+interface JSONData {
+  songs: Song[],
+  statuses: Status[]
+}
 
 function App() {
-  const msgStyle = 'color: #A6E3A1; font-size: 1rem'
+
+  const defSong = {
+    title: "804305954",
+    artist: "Sickboyrari",
+    albumart: "/assets/coverart/803sbr.jpg",
+    path: "/assets/songs/804305954.mp3"
+  }
+
+  const defStatus = {
+    content: "Error loading statuses, see console",
+    date: "7/23/2025"
+  }
+
+  const defaultData = {
+    songs: [defSong],
+    statuses: [defStatus]
+  }
+
+  const [data, setData] = useState<JSONData>(defaultData);
+  const [songs, setSongs] = useState<Song[]>(defaultData.songs);
+  const [statuses, setStatuses] = useState<Status[]>(defaultData.statuses);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedToy, setSelectedToy] = useState<string>("songs");
+  const [cachedSongs, setCachedSongs] = useState<RecentTracks | null>(null);
 
   useEffect(() => {
-    console.log("%cwhat're u looking at??", msgStyle);
-    console.log("%chello though", msgStyle);
-  }, [])
+    console.log("%cwhat're u looking at??", 'color: #A6E3A1; font-size: 1rem');
+    console.log("%chello though", 'color: #A6E3A1; font-size: 1rem');
+
+    const abortController = new AbortController();
+    
+    const fetchAllData = async () => {
+      try {
+        setLoading(true);
+        
+        const [songsRes, statusesRes] = await Promise.all([
+          fetch('data/songs.json', { signal: abortController.signal }),
+          fetch('data/statuses.json', { signal: abortController.signal })
+        ]);
+
+        if (!songsRes.ok || !statusesRes.ok) {
+          throw new Error('One or more requests failed');
+        }
+
+        const [songs, statuses] = await Promise.all([
+          songsRes.json(),
+          statusesRes.json()
+        ]);
+
+        setData({ songs, statuses });
+      } catch (err) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          setError(err.message);
+        } else {
+          setError('Failed to fetch JSON Data.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllData();
+    return () => abortController.abort();
+  }, []);
+
+  useEffect(() => {
+    setSongs(data?.songs || defaultData.songs);
+    setStatuses(data?.statuses || defaultData.statuses);
+  }, [data, defaultData.songs, defaultData.statuses])
+
+  useEffect(() => {
+    console.error(error);
+  }, [error])
 
   return (
     <div className="app">
@@ -24,14 +99,22 @@ function App() {
 
           <div className="left-1">
             <div className="l1-contents"> {/* Status */}
-              <StatusBox />
+              {loading ? <div className="loading"> loading... </div> : <StatusBox statuses={statuses}/>}
             </div>
           </div>
 
-          <div className="left-2">
-            <div className="l2-contents"> {/* MP3 Player */}
-              <MP3Player />
-            </div>
+          <div className={`left-2 ${selectedToy}`}>
+            <div className={`l2-contents`}> {/* MP3 Player */}
+              {
+                (selectedToy === "songs" && (loading ? <div className="loading"> loading... </div> : <MP3Player songs={songs}/>))
+              }
+              {
+                (selectedToy === "terminal" && (<Terminal />))
+              }
+              {
+                (selectedToy === "lastfm" && (<LastFM cachedSongs={cachedSongs} setCachedSongs={setCachedSongs}/>))
+              }
+              </div>
           </div>
 
           <div className="middle-1">
@@ -45,17 +128,17 @@ function App() {
               {`This website's theme is inspired by the spotify-tui theme from spicetify. (CSS was replicated, not taken directly.)`}
               {` Thank you to the creator for the inspiration!`}
               <br /> <br />
-              {`The songs section contains songs that I've been recently listening to. I'll update it sometimes. There are currently [${require('./songs.json').length}] songs available.`}
+              {`The songs section contains songs that I've been recently listening to. I'll update it sometimes. There are currently [${songs.length}] songs available.`}
               <br /> <br />
               {`Check out my github for my projects!`} <br /> <br /> <a href="https://github.com/miniaturity" target="_blank" rel="noreferrer">https://github.com/miniaturity</a>
               <br /> <br />
-              {`More about me.. I work with TypeScript, React, and CSS, which is what I used to create this website! I also sometimes work with Unity, Godot and Electron to build apps and games.`}
+              {`More about me.. I work with TypeScript, React, and CSS, which is what I used to create this website! I also sometimes work with Unity, Godot and Electron to build apps and games. `}
             </div>
           </div>
 
           <div className="right-1">
             <div className="r1-contents"> {/* Toybox */}
-              <ToyBox />
+              <ToyBox setSelectedToy={setSelectedToy} selectedToy={selectedToy} />
             </div>
           </div>
 
@@ -90,10 +173,396 @@ async function copyTextToClipboard(text: string): Promise<void> {
   }
 }
 
-const ToyBox: React.FC = () => {
+interface RecentTracks {
+  "recenttracks": {
+    "@attr": {
+      "page": number | string,
+      "perPage": number | string,
+      "total": number | string,
+      "totalPages": number | string,
+      "user": string,
+    }
+    "track": TrackInner[]
+  }
+}
+
+interface TrackInner {
+  "artist": {
+          "mbid": string,
+          "#text": string
+        },
+        "streamable": number | string,
+        "image": [
+          {
+            "size": string
+            "#text": string
+          },
+          {
+            "size": string,
+            "#text": string
+          },
+          {
+            "size": string,
+            "#text": string
+          },
+          {
+            "size": string,
+            "#text": string
+          }
+        ],
+        "mbid": string,
+        "album": {
+          "mbid": string,
+          "#text": string
+        },
+        "name": string,
+        "@attr": {
+          "nowplaying": string
+        } | null | undefined,
+        "date": {
+          "uts": string,
+          "#text": string
+        } | null | undefined,
+        "url": string
+}
+
+interface LastFMProps {
+  cachedSongs: RecentTracks | null,
+  setCachedSongs: React.Dispatch<React.SetStateAction<RecentTracks | null>>,
+}
+
+const LastFM: React.FC<LastFMProps> = ({ cachedSongs, setCachedSongs }) => {
+  const [recentSongs, setRecentSongs] = useState<RecentTracks | null>(null);
+  const [song, setSong] = useState<TrackInner | null>(null);
+  const [scrobbles, setScrobbles] = useState<number>(0);
+  const [date, setDate] = useState<string>("loading");
+  const [rateLimit, setRateLimit] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<string>("song");
+
+  useEffect(() => {
+    if (!cachedSongs)
+      handleFetch();
+    else
+      setRecentSongs(cachedSongs);
+  }, [])
+
+  useEffect(() => {
+    const recenttrack = recentSongs?.recenttracks.track[0];
+    setSong(recenttrack || null);
+    setScrobbles(Number(recentSongs?.recenttracks['@attr'].total) || 0);
+    setDate(recenttrack?.['@attr']?.nowplaying ? "playing now" : recentSongs?.recenttracks.track[0].date?.['#text'] || "time not available (fatal error)")
+    setCachedSongs(recentSongs);
+  }, [recentSongs])
+
+  useEffect(() => {
+    setDate(song?.['@attr']?.nowplaying ? "playing now" : song?.date?.["#text"] || "time not available (fatal error)")
+  }, [song])
+
+  const handleFetch = () => {
+    if (rateLimit) { 
+      console.error("You are being rate limited.");
+      return; 
+    }
+    setRateLimit(true);
+    fetch('https://lastfm.nkko.workers.dev/?method=user.getRecentTracks&user=miniaturity')
+      .then(res => res.json())
+      .then(data => { console.log(data); setRecentSongs(data) })
+      .catch(err => console.error("Failed to fetch song: ", err));
+    const timeRateLimit = setTimeout(() => {
+      setRateLimit(false);
+    }, 10000);
+
+    return () => clearTimeout(timeRateLimit);
+  }
+
+  const handleChangeViewmode = () => {
+    setViewMode(prev => prev === "song" ? "list" : "song");
+  }
+
   return (
-    <div className="toybox">
-      <span className="toybox-msg">Coming soon.</span>
+    <div className="lastfm-contents">
+
+      <div className="lc-main">
+        {viewMode === "song" && <SongView scrobbles={scrobbles} song={song} date={date}/>}
+        {viewMode === "list" && <ListView setViewMode={setViewMode} recenttracks={recentSongs} setSong={setSong} currentSong={song}/>}
+      </div>
+
+      <div className="lc-controls">
+        <div className="lc-buttons">
+          <button className={`lcc-reload${rateLimit ? '-disabled' : ''}`} onClick={handleFetch} disabled={rateLimit}>
+            {'↻'}
+          </button>
+
+          <button className="lcc-viewmode" onClick={handleChangeViewmode}>
+            {viewMode === "song" ? '♪' : viewMode === "list" ? '▤' : 'C'}
+          </button>
+        </div>
+
+        <div className="lcc-api">
+          {`[status: `}<span className="highlighted">{recentSongs ? "OK" : "NOT FOUND"}</span>{`]`}
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+interface ListViewProps {
+  recenttracks: RecentTracks | null,
+  setSong: React.Dispatch<React.SetStateAction<TrackInner | null>>,
+  currentSong: TrackInner | null,
+  setViewMode: React.Dispatch<React.SetStateAction<string>>,
+}
+
+const ListView: React.FC<ListViewProps> = ({ recenttracks, setSong, currentSong, setViewMode }) => {
+  const [songsList, setSongsList] = useState<TrackInner[] | null>(null);
+
+  useEffect(() => {
+    if (!recenttracks) return;
+    setSongsList(recenttracks.recenttracks.track);
+  }, [recenttracks]);
+
+  return (
+    <div className="lf-list">
+      {songsList?.map((song, index) => (
+        <SongListItem setViewMode={setViewMode} song={song} unqKey={String(index)} currentSong={currentSong} setSong={setSong}/>
+      ))}
+    </div>
+  )
+}
+
+interface SongListItemProps {
+  song: TrackInner,
+  currentSong: TrackInner | null,
+  unqKey: string,
+  setSong: React.Dispatch<React.SetStateAction<TrackInner | null>>,
+  setViewMode: React.Dispatch<React.SetStateAction<string>>
+}
+
+const SongListItem: React.FC<SongListItemProps> = ({ song, unqKey, setSong, currentSong, setViewMode }) => {
+
+  const handleClick = () => {
+    if (song !== currentSong) {
+      setSong(song);
+    }
+    setViewMode("song");
+  }
+
+  return (
+    <div className="lfl-item" key={unqKey} onClick={handleClick}>
+      <div className="lfli-img">
+        <img src={song.image[0]["#text"]} alt="x"/>
+      </div>    
+      <div className="lfli-info">
+        <div className="lfli-name">
+          {song.name}
+        </div>
+        <div className="lfli-artist">
+          {song.artist["#text"]}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface SongViewProps {
+  scrobbles: number,
+  song: TrackInner | null,
+  date: string,
+}
+
+const SongView: React.FC<SongViewProps> = ({ scrobbles, song, date}) => {
+
+  const { number } = useSpring({
+    from: { number: 0 },
+    number: scrobbles,
+    delay: 0,
+    config: { 
+      duration: 3000,
+      easing: easings.easeOutExpo  
+    }, 
+  });
+
+  return (
+    <>
+      <div className="lf-song">
+          <div className="lfs-img">
+            <img src={song?.image[3]["#text"] || "assets/coverart/luew.jpg"} alt={song?.name} id="lf-img-src"/>
+          </div>
+
+          <div className="lfs-info">
+            <div className="lfsi-name">
+              <a style={{ color: "var(--main-col)", fontWeight: "bold", textDecoration: "none" }} href={song?.url}>{song?.name || 'loading'}</a> 
+            </div>
+            <div className="lfsi-track">
+              <div className="lfsi-album">
+                on <span className="highlighted">{song?.album["#text"] || 'loading'}</span>
+              </div>
+              <div className="lfsi-artist">
+              by <span className="highlighted">{song?.artist["#text"] || 'loading'}</span>
+              </div>
+              <div className="lfsi-date">
+                {date === "playing now" ? "playing now!" : <>listened at <span className="highlighted">{date}</span></>}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="lf-dash">
+          <div className="lfd-stats">
+            <div className="lfds-scrobbles">
+              <span className="highlighted" style={{ padding: "2px" }}>
+                <animated.span>
+                  {number.to((n) => `${Math.floor(n)}`)}
+                </animated.span>
+              </span>
+              {" total scrobbles"}
+            </div>
+            <div className="lfds-user">
+              <span className="highlighted" style={{ padding: "2px" }}>
+                miniaturity
+              </span>
+              {" on last.fm"}
+            </div>
+          </div>
+        </div>
+      </>
+  )
+}
+
+interface ToyBoxProps {
+  setSelectedToy: React.Dispatch<React.SetStateAction<string>>,
+  selectedToy: string, 
+}
+
+const ToyBox: React.FC<ToyBoxProps> = ({ setSelectedToy, selectedToy }) => {
+  const toys = [
+    "songs",
+    "lastfm",
+    "terminal"
+  ]
+
+
+  return (
+    <div className={`toybox`}>
+      {toys.map(toy => (
+        <button className={`tb-button ${selectedToy === toy ? 'selected' : ''}`} onClick={() => {setSelectedToy(toy)}}>
+          {toy}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+interface CommandFunction {
+  cmd: string,
+  do: (args: string[] | null) => void,
+}
+
+interface Directory {
+  name: string,
+  files: File[] | null,
+  dirs: Directory[] | null,
+}
+
+interface File {
+  name: string,
+  pwd: string | null,
+  out: string,
+  do: null | ((args: string[] | null) => void),
+}
+
+const Terminal: React.FC = () => {
+  const [path, setPath] = useState<string>("C:/mini");
+  const [currDir, setCurrDir] = useState<string>("mini");
+  const [output, setOutput] = useState<string[]>(["Use the command 'help' for more information."]);
+ 
+  /* Depth 3 Dirs */
+
+
+
+  /* Depth 2 Dirs*/
+  const aboutDir: Directory = {
+    name: "about",
+    files: [],
+    dirs: null,
+  }
+
+  const songsDir: Directory = {
+    name: "songs",
+    files: [],
+    dirs: null,
+  }
+
+  /* Depth 1 Dirs */
+  const miniDir: Directory = {
+    name: "mini",
+    files: [],
+    dirs: [aboutDir, songsDir]
+  }
+
+  const dirs = [
+    miniDir,
+    songsDir,
+    aboutDir,
+  ]
+
+  const cmds: CommandFunction[] = [
+    {
+      cmd: "cd",
+      do: function(args: string[] | null) {
+
+      }
+    }
+  ]
+
+
+  const execCommand = (cmd: string) => {
+    const extracted: string[] = cmd.split(" ");
+    const commandStr = extracted[0];
+    const command = cmds.find(cmd => cmd.cmd === commandStr);
+
+    if (!command) {
+      openFile(commandStr, extracted[1] || null);
+    } else {
+      if (extracted.length === 1) command.do(null);
+      else {
+        command.do([...extracted.slice(1)]);
+      }
+    }
+  }
+
+  const openFile = (fileName: string, pwd: string | null) => {
+    const currentDirectory = dirs.find(dir => dir.name === currDir);
+    if (!currentDirectory) {
+      setOutput(prev => [...prev, "Fatal error: Invalid Directory"])
+      return;
+    } 
+    
+    const requestedFile = currentDirectory.files?.find(file => file.name === fileName);
+    
+    if (!currentDirectory.files) {
+      setOutput(prev => [...prev, "Invalid File or Command. Use the 'help' command for a list of the commands."]);
+      return;
+    } else if (!requestedFile) {
+      setOutput(prev => [...prev, "Invalid File or Command. Use the 'help' command for a list of the commands."]);
+      return;
+    } else {
+      if (requestedFile.pwd && requestedFile.pwd !== pwd) {
+        setOutput(prev => [...prev, `Error: ${requestedFile.name} is locked behind a password.`]);
+        return;
+      }
+      
+      if (requestedFile.do)
+        requestedFile.do(null);
+      setOutput(prev => [...prev, requestedFile.out]);
+    }
+
+  }
+
+  return (
+    <div className="terminal-i">
+      WIP ... will bween later.
     </div>
   )
 }
@@ -106,10 +575,11 @@ interface Song {
   albumart: string,
 }
 
+interface MP3PlayerProps {
+  songs: Song[] 
+}
 
-const MP3Player: React.FC = () => {
-  const songs: Song[] = require('./songs.json');
-
+const MP3Player: React.FC<MP3PlayerProps> = ({ songs }) => {
   const [selectedSong, setSelectedSong] = useState<Song>(songs[0]);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
@@ -292,11 +762,11 @@ const MP3Player: React.FC = () => {
 
 
 
+interface StatusBoxProps {
+  statuses: Status[]
+}
 
-
-const StatusBox: React.FC = () => {
-  const statuses: Status[] = require('./statuses.json');  
-
+const StatusBox: React.FC<StatusBoxProps> = ({ statuses }) => {
   return (
     <div className="status-box">
       {statuses.map((s, index) => (
@@ -320,7 +790,7 @@ const StatusItem: React.FC<StatusProps> = ({ status }) => {
     const postedDate: String[] = status.date.split('/');
 
     if (Number(postedDate[0]) !== now.getMonth() + 1 || Number(postedDate[2]) !== now.getFullYear()) return;
-    
+
     // There MIGHT be a better way to do this.
     switch (now.getDate() - Number(postedDate[1])) {
       case 0:
